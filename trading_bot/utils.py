@@ -39,10 +39,18 @@ def show_eval_result(model_name, profit, initial_offset):
 def get_stock_data(stock_file):
     """Reads stock data from csv file
     """
-    df = pd.read_csv(stock_file)
     if 'BTC' in  stock_file:
-        df.rename(columns={'close': 'Adj Close'})
+        df = pd.read_csv(stock_file)
+        return list(df['close'])
+    
+    df = pd.read_csv(stock_file)
     return list(df['Adj Close'])
+
+# def get_stock_data(stock_file):
+#     """Reads stock data from csv file
+#     """
+#     df = pd.read_csv(stock_file)
+#     return list(df['close'])
 
 
 def switch_k_backend_device():

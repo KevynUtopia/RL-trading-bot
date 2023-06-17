@@ -3,29 +3,41 @@ import logging
 
 import numpy as np
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
+import tqdm.notebook as tq
 
 from .utils import (
     format_currency,
     format_position
 )
 from .ops import (
-    get_state
+    get_state,
+    get_state_train
 )
 
 
 def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=10):
+    print("train")
     total_profit = 0
     data_length = len(data) - 1
 
     agent.inventory = []
     avg_loss = []
 
-    state = get_state(data, 0, window_size + 1)
-
-    for t in tqdm(range(data_length), total=data_length, leave=True, desc='Episode {}/{}'.format(episode, ep_count)):        
+    # state = get_state(data, 0, window_size + 1)
+    total_state = get_state_train(data, 0, window_size + 1)
+    # print(state.shape) #(4, 11)
+    
+    # for t in tq.tqdm(range(data_length), total=data_length, position = 0, leave=True, desc='Episode {}/{}'.format(episode, ep_count)):     
+    for t in tq.tqdm(range(total_state.shape[0]), position = 0, leave=True, desc='Episode {}/{}'.format(episode, ep_count)): 
         reward = 0
-        next_state = get_state(data, t + 1, window_size + 1)
+
+        d = total_state[t]
+        state = d[:window_size].reshape(1,-1)
+        next_state = d[1:].reshape(1,-1)
+
+
+        # next_state = get_state(data, t + 1, window_size + 1)
 
         # select an action
         action = agent.act(state)
@@ -51,12 +63,11 @@ def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=1
         if len(agent.memory) > batch_size:
             loss = agent.train_experience_replay(batch_size)
             avg_loss.append(loss)
-
-        state = next_state
+        # state = next_state
 
     if episode % 10 == 0:
         agent.save(episode)
-
+    
     return (episode, ep_count, total_profit, np.mean(np.array(avg_loss)))
 
 

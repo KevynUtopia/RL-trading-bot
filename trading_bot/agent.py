@@ -9,7 +9,8 @@ import keras.backend as K
 from keras.models import Sequential
 from keras.models import load_model, clone_model
 from keras.layers import Dense
-from keras.optimizers import Adam
+# from keras.optimizers import Adam
+import tensorflow.keras.optimizers.legacy as tfl
 
 
 def huber_loss(y_true, y_pred, clip_delta=1.0):
@@ -48,7 +49,7 @@ class Agent:
         self.learning_rate = 0.001
         self.loss = huber_loss
         self.custom_objects = {"huber_loss": huber_loss}  # important for loading the model from memory
-        self.optimizer = Adam(learning_rate=self.learning_rate)
+        self.optimizer = tfl.Adam(learning_rate=self.learning_rate)
 
         if pretrained and self.model_name is not None:
             self.model = self.load()
@@ -93,7 +94,7 @@ class Agent:
             self.first_iter = False
             return 1 # make a definite buy on the first iter
 
-        action_probs = self.model.predict(state)
+        action_probs = self.model.predict(state, verbose=0)
         return np.argmax(action_probs[0])
 
     def train_experience_replay(self, batch_size):
@@ -109,10 +110,10 @@ class Agent:
                     target = reward
                 else:
                     # approximate deep q-learning equation
-                    target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
+                    target = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
 
                 # estimate q-values based on current state
-                q_values = self.model.predict(state)
+                q_values = self.model.predict(state, verbose=0)
                 # update the target for current action based on discounted reward
                 q_values[0][action] = target
 
@@ -130,10 +131,10 @@ class Agent:
                     target = reward
                 else:
                     # approximate deep q-learning equation with fixed targets
-                    target = reward + self.gamma * np.amax(self.target_model.predict(next_state)[0])
+                    target = reward + self.gamma * np.amax(self.target_model.predict(next_state, verbose=0)[0])
 
                 # estimate q-values based on current state
-                q_values = self.model.predict(state)
+                q_values = self.model.predict(state, verbose=0)
                 # update the target for current action based on discounted reward
                 q_values[0][action] = target
 
@@ -151,10 +152,10 @@ class Agent:
                     target = reward
                 else:
                     # approximate double deep q-learning equation
-                    target = reward + self.gamma * self.target_model.predict(next_state)[0][np.argmax(self.model.predict(next_state)[0])]
+                    target = reward + self.gamma * self.target_model.predict(next_state, verbose=0)[0][np.argmax(self.model.predict(next_state, verbose=0)[0])]
 
                 # estimate q-values based on current state
-                q_values = self.model.predict(state)
+                q_values = self.model.predict(state, verbose=0)
                 # update the target for current action based on discounted reward
                 q_values[0][action] = target
 
@@ -166,15 +167,13 @@ class Agent:
 
         # update q-function parameters based on huber loss gradient
         loss = self.model.fit(
-            np.array(X_train), np.array(y_train),
-            epochs=1, verbose=0
-        ).history["loss"][0]
+            np.array(X_train), np.array(y_train), epochs=1, verbose=0).history["loss"][0]
 
         # as the training goes on we want the agent to
         # make less random and more optimal decisions
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-
+        # print("NoNoNoYes")
         return loss
 
     def save(self, episode):

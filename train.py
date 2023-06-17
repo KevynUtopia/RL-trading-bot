@@ -27,6 +27,9 @@ import logging
 import coloredlogs
 
 from docopt import docopt
+import pandas as pd
+import random
+
 
 from trading_bot.agent import Agent
 from trading_bot.methods import train_model, evaluate_model
@@ -49,8 +52,18 @@ def main(train_stock, val_stock, window_size, batch_size, ep_count,
     """
     agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
     
-    train_data = get_stock_data(train_stock)
-    val_data = get_stock_data(val_stock)
+    # df = pd.read_csv(train_stock)
+    # train_data = get_stock_data(train_stock)[:int(len(df)*0.1)]
+    # df = pd.read_csv(val_stock)
+    # val_data = get_stock_data(val_stock)[:int(len(df)*0.1)]
+
+    df = pd.read_csv(train_stock)
+
+    train_data = get_stock_data(train_stock)#[:int(len(df))]
+    # df = pd.read_csv(val_stock)
+    part = random.random()*0.9
+    # val_data = get_stock_data(train_stock)[int(len(df)*part):int(len(df)*(part+0.02))]
+    val_data = get_stock_data(train_stock)[int(len(df)*0.1):int(len(df)*0.12)]
 
     initial_offset = val_data[1] - val_data[0]
 
