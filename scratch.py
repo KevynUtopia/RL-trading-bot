@@ -29,11 +29,11 @@ import numpy as np
 
 def downsample(data, wd, sample_rate=0.3):
     wd = 11
-    a = np.array(np.arange(1,50)).reshape(1,-1)
+    # a = np.array(np.arange(1,50)).reshape(1,-1)
+    print(data.shape)
     if data.shape[-1] % wd !=0:
         arr = data.squeeze()
         pad = wd - data.shape[-1] % wd
-        print(pad)
         data = np.pad(arr, (0, pad), 'edge')
         data.reshape(1,-1)
     splt = np.array_split(data, data.shape[-1]//wd, axis=(len(data.shape)-1))
@@ -41,6 +41,7 @@ def downsample(data, wd, sample_rate=0.3):
 
     # calculate variance and index after sort
     sig = np.var(splt,axis=1)
+    print(splt.shape, sig.shape)
     sort_idx = np.argsort(sig)
 
 

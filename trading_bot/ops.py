@@ -30,7 +30,7 @@ def downsample(data, wd, sample_rate=0.3):
     # print("splt", splt.shape)
 
     # calculate variance and index after sort
-    sig = np.var(splt,axis=0)
+    sig = np.var(splt,axis=1) 
     sort_idx = np.argsort(sig)
 
 
