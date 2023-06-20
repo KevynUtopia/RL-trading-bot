@@ -9,6 +9,7 @@ import keras.backend as K
 from keras.models import Sequential
 from keras.models import load_model, clone_model
 from keras.layers import Dense
+# from kerasbeats import NBeatsModel
 # from keras.optimizers import Adam
 import tensorflow.keras.optimizers.legacy as tfl
 
@@ -64,6 +65,7 @@ class Agent:
             # target network
             self.target_model = clone_model(self.model)
             self.target_model.set_weights(self.model.get_weights())
+            # self.target_model = self.model
 
     def _model(self):
         """Creates the model
@@ -77,6 +79,15 @@ class Agent:
 
         model.compile(loss=self.loss, optimizer=self.optimizer)
         return model
+
+    # def _model(self):
+    #     """Creates the model
+    #     """
+    #     nbeats = NBeatsModel(lookback=10)
+    #     nbeats.build_layer()
+    #     nbeats.build_model()
+    #     nbeats.model.compile(loss = 'mse', optimizer = tf.keras.optimizers.RMSprop(0.001))
+    #     return nbeats
 
     def remember(self, state, action, reward, next_state, done):
         """Adds relevant data to memory
@@ -131,6 +142,7 @@ class Agent:
                     target = reward
                 else:
                     # approximate deep q-learning equation with fixed targets
+                    # print(self.target_model.predict(next_state, verbose=0))
                     target = reward + self.gamma * np.amax(self.target_model.predict(next_state, verbose=0)[0])
 
                 # estimate q-values based on current state
@@ -162,6 +174,7 @@ class Agent:
                 X_train.append(state[0])
                 y_train.append(q_values[0])
                 
+
         else:
             raise NotImplementedError()
 

@@ -64,6 +64,7 @@ def main(train_stock, val_stock, window_size, batch_size, ep_count,
     part = random.random()*0.9
     # val_data = get_stock_data(train_stock)[int(len(df)*part):int(len(df)*(part+0.02))]
     val_data = get_stock_data(train_stock)[int(len(df)*0.1):int(len(df)*0.12)]
+    # val_data = get_stock_data(train_stock)
 
     initial_offset = val_data[1] - val_data[0]
 

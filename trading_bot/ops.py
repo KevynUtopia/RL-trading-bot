@@ -17,7 +17,7 @@ def sigmoid(x):
 
 
 
-def downsample(data, wd, sample_rate=0.3):
+def downsample(data, wd, sample_rate=0.02):
     wd += 1
     data = np.array(data).reshape(1,-1)
     if data.shape[-1] % wd !=0:
@@ -35,7 +35,7 @@ def downsample(data, wd, sample_rate=0.3):
 
 
     # down-sample for 1 / sample_rate
-    return splt[sort_idx[::int(sample_rate*10)]]
+    return splt[sort_idx[::int(1/sample_rate)]]
 
 
 def get_state_train(data, t, n_days):
