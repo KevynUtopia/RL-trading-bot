@@ -17,7 +17,7 @@ def sigmoid(x):
 
 
 
-def downsample(data, wd, sample_rate=0.001):
+def downsample(data, wd, sample_rate=0.3):
     wd += 1
     data = np.array(data).reshape(1,-1)
     if data.shape[-1] % wd !=0:
@@ -38,7 +38,7 @@ def downsample(data, wd, sample_rate=0.001):
     return splt[sort_idx[::int(1/sample_rate)]]
 
 
-def get_state_train(data, t, n_days):
+def get_state_train(data, t, n_days, sample_rate):
     """Returns an n-day state representation ending at time t
     """
     # d = t - n_days + 1
@@ -52,7 +52,7 @@ def get_state_train(data, t, n_days):
     # Each data segments is in length of (window + 1)
     # In training process, each data seg can be separated into [:wind] and [1:wind+1]
     # print(np.array(data).shape)
-    results = downsample(data, n_days).squeeze()
+    results = downsample(data, n_days, sample_rate).squeeze()
     final_res = []
     # print(results.shape)
     for arr in results:

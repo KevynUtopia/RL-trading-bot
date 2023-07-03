@@ -16,7 +16,7 @@ from .ops import (
 )
 
 
-def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=10):
+def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=10, sample_rate=0.3):
     print("train")
     total_profit = 0
     data_length = len(data) - 1
@@ -25,7 +25,7 @@ def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=1
     avg_loss = []
 
     # state = get_state(data, 0, window_size + 1)
-    total_state = get_state_train(data, 0, window_size + 1)
+    total_state = get_state_train(data, 0, window_size + 1, sample_rate)
     # print(state.shape) #(4, 11)
     
     # for t in tq.tqdm(range(data_length), total=data_length, position = 0, leave=True, desc='Episode {}/{}'.format(episode, ep_count)):     

@@ -5,7 +5,7 @@ Usage:
   train.py <train-stock> <val-stock> [--strategy=<strategy>]
     [--window-size=<window-size>] [--batch-size=<batch-size>]
     [--episode-count=<episode-count>] [--model-name=<model-name>]
-    [--pretrained] [--debug]
+    [--pretrained] [--debug] [--sample-rate=<sample-rate>]
 
 Options:
   --strategy=<strategy>             Q-learning strategy to use for training the network. Options:
@@ -44,7 +44,7 @@ from trading_bot.utils import (
 
 def main(train_stock, val_stock, window_size, batch_size, ep_count,
          strategy="t-dqn", model_name="model_debug", pretrained=False,
-         debug=False):
+         debug=False, sample_rate=0.3):
     """ Trains the stock trading bot using Deep Q-Learning.
     Please see https://arxiv.org/abs/1312.5602 for more details.
 
@@ -60,15 +60,19 @@ def main(train_stock, val_stock, window_size, batch_size, ep_count,
     df = pd.read_csv(train_stock)
 
     train_data = get_stock_data(train_stock)#[:int(len(df))]
+    # df = pd.read_csv(val_stock)
+    part = random.random()*0.9
     # val_data = get_stock_data(train_stock)[int(len(df)*part):int(len(df)*(part+0.02))]
-    # val_data = get_stock_data(train_stock)[int(len(df)*0.3):int(len(df)*0.32)]
-    val_data = get_stock_data(val_stock)
+    if 'BTC' in  train_stock:
+      val_data = get_stock_data(train_stock)[int(len(df)*0.3):int(len(df)*0.32)]
+    else:
+      val_data = get_stock_data(val_stock)
 
     initial_offset = val_data[1] - val_data[0]
 
     for episode in range(1, ep_count + 1):
         train_result = train_model(agent, episode, train_data, ep_count=ep_count,
-                                   batch_size=batch_size, window_size=window_size)
+                                   batch_size=batch_size, window_size=window_size, sample_rate=sample_rate)
         val_result, _ = evaluate_model(agent, val_data, window_size, debug)
         show_train_result(train_result, val_result, initial_offset)
 
@@ -85,6 +89,7 @@ if __name__ == "__main__":
     model_name = args["--model-name"]
     pretrained = args["--pretrained"]
     debug = args["--debug"]
+    sample_rate = float(args["--sample-rate"])
 
     coloredlogs.install(level="DEBUG")
     switch_k_backend_device()
@@ -92,6 +97,6 @@ if __name__ == "__main__":
     try:
         main(train_stock, val_stock, window_size, batch_size,
              ep_count, strategy=strategy, model_name=model_name, 
-             pretrained=pretrained, debug=debug)
+             pretrained=pretrained, debug=debug, sample_rate=sample_rate)
     except KeyboardInterrupt:
         print("Aborted!")
