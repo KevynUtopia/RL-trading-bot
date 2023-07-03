@@ -17,7 +17,7 @@ def sigmoid(x):
 
 
 
-def downsample(data, wd, sample_rate=0.02):
+def downsample(data, wd, sample_rate=0.001):
     wd += 1
     data = np.array(data).reshape(1,-1)
     if data.shape[-1] % wd !=0:
