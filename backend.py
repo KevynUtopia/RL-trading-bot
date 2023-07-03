@@ -6,18 +6,27 @@ from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
 from keras.models import load_model
 import json
+import numpy as np
+
+from trading_bot.agent import Agent
 
 app = Flask(__name__)
 
 #load model
-path = "models/doubledqn_goog.h5"
-model = load_model(path)
+model_name = "models/doubledqn_goog.h5"
+agent = load_model(model_name)
 
-#处理成相同序列
-def get_sequence(text):
-    x_token = tokenizer.texts_to_sequences(text)
-    x_processed = sequence.pad_sequences(x_token, maxlen=100, value=0)
-    return x_processed
+window_size = 10
+strategy = 'dqn'
+pretrained = True
+
+def get_stock_data(data):
+    if type(data) is np.ndarray:
+        raise Exception("Numpy input is required")
+    try:
+        return data[:window_size]
+    except:
+        print("input sequence requires minimal length of {}, while current shape is {}".format(window_size, data.size()))
 
 @app.route('/')
 def hello_world():
@@ -26,11 +35,28 @@ def hello_world():
 @app.route("/predict", methods=["GET","POST"])
 def predict():
     data = request.get_json()
-    if 'values' not in data:
-        return {'result': 'no input'}
-    arr = data['values']
-    res = model.predict(get_sequence(arr))
-    return {'result':res.tolist()}
+    if 'status' not in data:
+        return {'result': 'no status input'}
+    state = data['status']
+    
+    agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
+    action = agent.act(state, is_eval=True)
+    
+    # if action == 1:
+    #         agent.inventory.append(data[t])
+        
+    # # SELL
+    # elif action == 2 and len(agent.inventory) > 0:
+    #     bought_price = agent.inventory.pop(0)
+    #     delta = data[t] - bought_price
+    #     reward = delta #max(delta, 0)
+    #     total_profit += delta
+        
+    # # HOLD
+    # else:
+    #     pass
+    
+    return {'result':action.tolist()}
 
 if __name__ == '__main__':
     app.run()
