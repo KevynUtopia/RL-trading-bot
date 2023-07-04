@@ -35,9 +35,9 @@ def hello_world():
 @app.route("/predict", methods=["GET","POST"])
 def predict():
     data = request.get_json()
-    if 'status' not in data:
-        return {'result': 'no status input'}
-    state = data['status']
+    if 'bid_price' not in data:
+        return {'result': 'no price input'}
+    state = data['bid_price']
     
     agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
     action = agent.act(state, is_eval=True)
