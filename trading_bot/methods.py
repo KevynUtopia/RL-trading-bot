@@ -40,11 +40,14 @@ def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=1
         # next_state = get_state(data, t + 1, window_size + 1)
 
         # select an action
-        action = agent.act(state)
-
+        action, confidence = agent.act(state, is_eval=True)
+        
+        balance = agent.balance
         # BUY
-        if action == 1:
-            agent.inventory.append(data[t])
+        if action == 1 and data[t]<=balance:
+            agent.inventory.append(data[t]*confidence)
+            # print("bug", data[t], confidence, data[t]*confidence)
+            agent.balance -= data[t]
 
         # SELL
         elif action == 2 and len(agent.inventory) > 0:
@@ -52,6 +55,9 @@ def train_model(agent, episode, data, ep_count=100, batch_size=32, window_size=1
             delta = data[t] - bought_price
             reward = delta #max(delta, 0)
             total_profit += delta
+            agent.balance += data[t]
+            
+            # print("!", delta, data[t], bought_price)
 
         # HOLD
         else:
@@ -85,13 +91,15 @@ def evaluate_model(agent, data, window_size, debug):
         next_state = get_state(data, t + 1, window_size + 1)
         
         # select an action
-        action = agent.act(state, is_eval=True)
-
+        action, confidence = agent.act(state, is_eval=True)
+        
+        balance = agent.balance
         # BUY
-        if action == 1:
-            agent.inventory.append(data[t])
+        if action == 1 and data[t]<=balance:
+            agent.inventory.append(data[t]*confidence)
+            agent.balance -= data[t]
 
-            history.append((data[t], "BUY"))
+            history.append((data[t]*confidence, "BUY"))
             if debug:
                 logging.debug("Buy at: {}".format(format_currency(data[t])))
         
@@ -101,6 +109,7 @@ def evaluate_model(agent, data, window_size, debug):
             delta = data[t] - bought_price
             reward = delta #max(delta, 0)
             total_profit += delta
+            agent.balance += data[t]
 
             history.append((data[t], "SELL"))
             if debug:

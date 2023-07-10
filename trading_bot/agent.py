@@ -30,7 +30,7 @@ def huber_loss(y_true, y_pred, clip_delta=1.0):
 class Agent:
     """ Stock Trading Bot """
 
-    def __init__(self, state_size, strategy="t-dqn", reset_every=1000, pretrained=False, model_name=None):
+    def __init__(self, state_size, strategy="t-dqn", reset_every=1000, pretrained=False, model_name=None, balance=1000.):
         self.strategy = strategy
 
         # agent config
@@ -51,6 +51,7 @@ class Agent:
         self.loss = huber_loss
         self.custom_objects = {"huber_loss": huber_loss}  # important for loading the model from memory
         self.optimizer = tfl.Adam(learning_rate=self.learning_rate)
+        self.balance = balance
 
         if pretrained and self.model_name is not None:
             self.model = self.load()
@@ -75,7 +76,7 @@ class Agent:
         model.add(Dense(units=256, activation="relu"))
         model.add(Dense(units=256, activation="relu"))
         model.add(Dense(units=128, activation="relu"))
-        model.add(Dense(units=self.action_size))
+        model.add(Dense(units=self.action_size, activation="softmax"))
 
         model.compile(loss=self.loss, optimizer=self.optimizer)
         return model
@@ -103,10 +104,11 @@ class Agent:
 
         if self.first_iter:
             self.first_iter = False
-            return 1 # make a definite buy on the first iter
+            return 1, 0.33 # make a definite buy on the first iter
 
         action_probs = self.model.predict(state, verbose=0)
-        return np.argmax(action_probs[0])
+        action = np.argmax(action_probs[0])
+        return action, action_probs[:,action].item()
 
     def train_experience_replay(self, batch_size):
         """Train on previous experiences in memory
@@ -190,7 +192,7 @@ class Agent:
         return loss
 
     def save(self, episode):
-        self.model.save("models/{}_{}".format(self.model_name, episode))
+        self.model.save("models/{}_{}.h5".format(self.model_name, episode))
 
     def load(self):
         return load_model("models/" + self.model_name, custom_objects=self.custom_objects)

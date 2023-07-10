@@ -5,7 +5,7 @@ Usage:
   train.py <train-stock> <val-stock> [--strategy=<strategy>]
     [--window-size=<window-size>] [--batch-size=<batch-size>]
     [--episode-count=<episode-count>] [--model-name=<model-name>]
-    [--pretrained] [--debug] [--sample-rate=<sample-rate>]
+    [--pretrained] [--debug] [--sample-rate=<sample-rate>] [--balance=<balance>]
 
 Options:
   --strategy=<strategy>             Q-learning strategy to use for training the network. Options:
@@ -44,13 +44,13 @@ from trading_bot.utils import (
 
 def main(train_stock, val_stock, window_size, batch_size, ep_count,
          strategy="t-dqn", model_name="model_debug", pretrained=False,
-         debug=False, sample_rate=0.3):
+         debug=False, sample_rate=0.3, balance=1000.0):
     """ Trains the stock trading bot using Deep Q-Learning.
     Please see https://arxiv.org/abs/1312.5602 for more details.
 
     Args: [python train.py --help]
     """
-    agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
+    agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name, balance=balance)
     
     # df = pd.read_csv(train_stock)
     # train_data = get_stock_data(train_stock)[:int(len(df)*0.1)]
@@ -90,6 +90,7 @@ if __name__ == "__main__":
     pretrained = args["--pretrained"]
     debug = args["--debug"]
     sample_rate = float(args["--sample-rate"])
+    balance = float(args["--balance"])
 
     coloredlogs.install(level="DEBUG")
     switch_k_backend_device()
@@ -97,6 +98,6 @@ if __name__ == "__main__":
     try:
         main(train_stock, val_stock, window_size, batch_size,
              ep_count, strategy=strategy, model_name=model_name, 
-             pretrained=pretrained, debug=debug, sample_rate=sample_rate)
+             pretrained=pretrained, debug=debug, sample_rate=sample_rate, balance=balance)
     except KeyboardInterrupt:
         print("Aborted!")

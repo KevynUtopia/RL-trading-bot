@@ -35,28 +35,49 @@ def hello_world():
 @app.route("/predict", methods=["GET","POST"])
 def predict():
     data = request.get_json()
+        
+    cost, profit = -1., -1.
+    
     if 'bid_price' not in data:
-        return {'result': 'no price input'}
-    state = data['bid_price']
+        return {'result': 'no bid_price input', 'cost':cost, 'profit':profit}
+    if 'ask_price' not in data:
+        return {'result': 'no ask_price input', 'cost':cost, 'profit':profit}
+    if 'bid_size' not in data:
+        return {'result': 'no bid_size input', 'cost':cost, 'profit':profit}
+    if 'ask_size' not in data:
+        return {'result': 'no ask_size input', 'cost':cost, 'profit':profit}
+    
+    if 'balance' not in data:
+        return {'result': 'please specify balance', 'cost':cost, 'profit':profit}
+    
+    bid_price = data['bid_price']
+    ask_price = data['ask_price']
+    bid_size = data['bid_size']
+    ask_size = data['ask_size']
+    balance = data['balance']
+    
+    mid_price = (bid_price + ask_price)/2
     
     agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
-    action = agent.act(state, is_eval=True)
+    action = agent.act(mid_price, is_eval=True)
+
     
-    # if action == 1:
-    #         agent.inventory.append(data[t])
+    if action == 1:
+        cost = bid_price * bid_size
+        if balance >= cost:
+            cost, profit = bid_price * bid_size, 0.
         
-    # # SELL
-    # elif action == 2 and len(agent.inventory) > 0:
-    #     bought_price = agent.inventory.pop(0)
-    #     delta = data[t] - bought_price
-    #     reward = delta #max(delta, 0)
-    #     total_profit += delta
+    # SELL
+    elif action == 2:
+        cost, profit = 0., ask_price * ask_size
         
-    # # HOLD
-    # else:
-    #     pass
+    # HOLD
+    else:
+        pass
     
-    return {'result':action.tolist()}
+    # if buy, balance -= cost
+    # if sell, balance += profit
+    return {'result':action.tolist(), 'cost':cost, 'profit':profit}
 
 if __name__ == '__main__':
     app.run()
