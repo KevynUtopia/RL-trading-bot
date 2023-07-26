@@ -81,3 +81,4 @@ python train.py ./dataset/archive/BTC-2021min.csv ./dataset/archive/BTC-2021min.
 --sample-rate 0.005 --balance 100000.0
 ```
   
+Some of our experimental logs and visualization results are placed in the ```run.ipynb```.  
