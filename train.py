@@ -52,6 +52,10 @@ def main(train_stock, val_stock, window_size, batch_size, ep_count,
     """
     agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name, balance=balance)
     
+    if 'BTC' in  train_stock:
+      print("BTC dataset")
+    else:
+      print("Stock dataset")
     # df = pd.read_csv(train_stock)
     # train_data = get_stock_data(train_stock)[:int(len(df)*0.1)]
     # df = pd.read_csv(val_stock)
@@ -64,7 +68,7 @@ def main(train_stock, val_stock, window_size, batch_size, ep_count,
     part = random.random()*0.9
     # val_data = get_stock_data(train_stock)[int(len(df)*part):int(len(df)*(part+0.02))]
     if 'BTC' in  train_stock:
-      val_data = get_stock_data(train_stock)[int(len(df)*0.3):int(len(df)*0.32)]
+      val_data = get_stock_data(train_stock)[int(len(df)*0.3):int(len(df)*0.302)]
     else:
       val_data = get_stock_data(val_stock)
 

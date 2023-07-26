@@ -106,7 +106,7 @@ class Agent:
             self.first_iter = False
             return 1, 0.33 # make a definite buy on the first iter
 
-        action_probs = self.model.predict(state, verbose=0)
+        action_probs = self.model.predict(state, verbose=0) #[0.3,0.3,0.3]
         action = np.argmax(action_probs[0])
         return action, action_probs[:,action].item()
 
